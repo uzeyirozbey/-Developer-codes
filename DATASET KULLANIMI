@@ -1,0 +1,142 @@
+using Newtonsoft.Json.Linq;
+using servis.DataAccess;
+using System;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace Dochtech.DataAccess
+{
+    public static class DbServis
+    {
+        public static string ConStr = ConfigurationManager.ConnectionStrings[""].ConnectionString;
+
+        public static bool SqlPost(JObject j, string sp)
+        {
+            SqlCommand cmd = new SqlCommand();
+            cmd.Connection = Tolls.Baglanti;
+            cmd.CommandText = string.Format(sp);
+            cmd.CommandType = CommandType.StoredProcedure;
+            dynamic items = j;
+            foreach (dynamic item in items)
+            {
+                string parametreAd = "@" + item.Name;
+                object parametreDeger = item.Value.Value;
+                cmd.Parameters.AddWithValue(parametreAd, parametreDeger);
+            }
+            return Tolls.komutCalistir(cmd);
+        }
+        public static bool SqlPost(string sp)
+        {
+            SqlCommand cmd = new SqlCommand();
+            cmd.Connection = Tolls.Baglanti;
+            cmd.CommandText = string.Format(sp);
+            cmd.CommandType = CommandType.StoredProcedure;
+            return Tolls.komutCalistir(cmd);
+        }
+        ////----Getirme İşlemlerinde Kullanılır.
+        //public static DataSet SqlGet(JObject j, string sp)
+        //{
+        //    try
+        //    {
+        //        using (SqlDataAdapter adp = new SqlDataAdapter())
+        //        {
+        //            SqlCommand cmd = new SqlCommand();
+        //            cmd.Connection = Tolls.Baglanti;
+        //            cmd.CommandText = string.Format(sp);
+        //            cmd.CommandType = CommandType.StoredProcedure;
+        //            dynamic items = j;
+        //            foreach (dynamic item in items)
+        //            {
+        //                string parametreAd = "@" + item.Name;
+        //                object parametreDeger = item.Value.Value;
+        //                cmd.Parameters.AddWithValue(parametreAd, parametreDeger);
+        //            }
+        //            Tolls.BaglantiAc();
+        //            adp.SelectCommand = cmd;
+        //            DataSet ds = new DataSet();
+        //            adp.Fill(ds);
+        //            adp.Dispose();
+        //            ds.Dispose();
+        //            Tolls.Kapat();
+        //            return ds;
+        //        }
+        //    }
+
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+        //public static DataSet SqlGet(string sp)
+        //{
+        //    string JSONString = string.Empty;
+        //    SqlDataAdapter adp = new SqlDataAdapter();
+        //    SqlCommand cmd = new SqlCommand();
+        //    cmd.Connection = Tolls.Baglanti;
+        //    cmd.CommandText = string.Format(sp);
+        //    cmd.CommandType = CommandType.StoredProcedure;
+        //    adp.SelectCommand = cmd;
+        //    DataSet ds = new DataSet();
+        //    adp.Fill(ds);
+        //    return ds;
+        //}
+  
+        public static DataSet SqlGetir(string Sp)
+        {
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlCommand sqlCommand = new SqlCommand(Sp, new SqlConnection(ConStr));
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+                sqlDataAdapter.SelectCommand = sqlCommand;
+                sqlDataAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+                sqlDataAdapter.Fill(ds);
+                if (ds.Tables.Count > 0)
+                {
+                    return ds;
+                }
+                else
+                {
+                    return ds;
+                }
+            }
+            catch (Exception ex)
+            {
+                //LOG class metod
+                throw ex;
+            }
+        }
+        public static DataSet SqlGetir(string Sp, JObject Param)
+        {
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlCommand sqlCommand = new SqlCommand(Sp, new SqlConnection(ConStr));
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+                sqlDataAdapter.SelectCommand = sqlCommand;
+                sqlDataAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+                foreach (var item in Param)
+                {
+                    sqlDataAdapter.SelectCommand.Parameters.Add(new SqlParameter(item.Key, item.Value.ToString()));
+                }
+                sqlDataAdapter.Fill(ds);
+                if (ds.Tables.Count > 0)
+                {
+                    return ds;
+                }
+                else
+                {
+                    return ds;
+                }
+            }
+            catch (Exception ex)
+            {
+                //LOG class metod
+
+                throw ex;
+                //return null;
+            }
+        }
+    }
+}
