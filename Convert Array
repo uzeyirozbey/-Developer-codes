@@ -1,0 +1,44 @@
+ Kategoriler = [];
+  $.each(data, function (i, v) {
+      var el = {
+          id: v.ID,
+          text: v.KATEGORI,
+          ALT_KAT: v.ALT_KAT
+      }
+      Kategoriler.push(el);
+  });
+  $('#jstree_demo_div').jstree({
+      "core": {
+          "themes": {
+              "variant": "x-large"
+          },
+          "data": convert(Kategoriler),
+          "multiple": false
+      },
+      "checkbox": {
+          "keep_selected_style": true,
+          'deselect_all': false,
+          'three_state': false
+      },
+      "plugins": ["wholerow", "checkbox", "search" ]
+      //data: convert(Kategoriler)
+  });
+
+------------------------------------------------------------
+
+function convert(array) {
+            var map = {};
+            for (var i = 0; i < array.length; i++) {
+                var obj = array[i];
+                obj.children = [];
+                map[obj.id] = obj;
+                var parent = obj.ALT_KAT || '-';
+                if (!map[parent]) {
+                    map[parent] = {
+                        children: []
+                    };
+                }
+                map[parent].children.push(obj);
+            }
+            return map['-'].children;
+        }
