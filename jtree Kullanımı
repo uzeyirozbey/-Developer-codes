@@ -1,0 +1,77 @@
+        var Kategoriler = [];
+        function UrunKategoriListele() {
+            $('#kategori_tree').jstree("destroy").empty();
+            var param = {
+                id: $("#txtfirma option:selected").val()
+            }
+            $.ajax({
+                url: "@Url.Action("FirmaKategorileri")",
+                type: "POST",
+                data: JSON.stringify(param),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.length != 0) {
+                        Kategoriler = [];
+                        $.each(data, function (i, v) {
+                            var el = {
+                                id: v.ID,
+                                text: v.KATEGORI,
+                                ALT_KAT: v.ALT_KAT
+                            }
+                            Kategoriler.push(el);
+                        });
+                        $('#kategori_tree').jstree({
+                            "core": {
+                                "themes": {
+                                    "variant": "large"
+                                },
+                                "data": convert(Kategoriler),
+                                "multiple": false
+                            },
+                            "treeParent": {
+                                "hover_node": true,
+                                "select_node": false
+                            },   
+                            "checkbox": {
+                                "keep_selected_style": false,
+                                'deselect_all': true,
+                                'three_state': false
+                            },
+                            "plugins": ["wholerow", "checkbox", "search"],
+                          
+                        }).bind("select_node.jstree", function (e, data) {
+                            if (data.node.children.length > 0) {
+                                $('#kategori_tree').jstree(true).deselect_node(data.node);
+                                $('#kategori_tree').jstree(true).toggle_node(data.node);
+                            }
+                            //var href = data.node.a_attr.href;
+                            //document.location.href = href;
+                        });
+                    }
+                    else {
+                        $('#kategori_tree').jstree({
+                            "core": {
+                                "data": null
+                            },
+                        });
+                    }
+                },
+            });
+        }
+        function convert(array) {
+            var map = {};
+            for (var i = 0; i < array.length; i++) {
+                var obj = array[i];
+                obj.children = [];
+                map[obj.id] = obj;
+                var parent = obj.ALT_KAT || '-';
+                if (!map[parent]) {
+                    map[parent] = {
+                        children: []
+                    };
+                }
+                map[parent].children.push(obj);
+            }
+            return map['-'].children;
+        }
