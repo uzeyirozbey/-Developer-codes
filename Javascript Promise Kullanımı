@@ -1,0 +1,85 @@
+Promise Kullanımı
+
+function userDetails(id) {
+    var dfd = jQuery.Deferred();
+    var param = {
+        "ID_KULLANICI": $.cookie("ID_KULLANICI"),
+        "ID_OTURUM": $.cookie("ID_OTURUM"),
+        "ID_KKULLANICI": id,
+        "ID_YETKI": $.cookie("ID_YETKI")
+     };
+    WebAjax("user", "userDetails", JSON.stringify(param), "body", "Yükleniyor", function (res) {
+        var data = res.NESNE["Table"];
+        if (data.length > 0) {
+            $("#txtId").val(data[0].ID_KULLANICI)
+            $("#txtName").val(data[0].AD);
+            $("#txtSurname").val(data[0].SOYAD);
+            $("#txtTcIdentity").val(data[0].TC_KIMLIK_NO);
+            $("#txtEmail").val(data[0].E_POSTA);
+            $("#txtPhone").val(data[0].TELEFON);
+            $("#txtAuthorityGroup").val(data[0].ID_YETKI);
+            $("#txtUsername").val(data[0].KULLANICI_AD);
+            $("#txtPassword").val(data[0].SIFRE);
+            $("#mdlTitle").text("Kullanıcı Detay");
+            $("#btnOperation").text("Güncelle");
+            $("#userMdl").modal("show");
+        }
+        else {
+            toastr.error("Bir hatayla karşılaşıldı", "Durum");
+        }
+        dfd.resolve();
+    });
+    return dfd.promise();
+}
+
+///////////////
+function getListAuthorityGroup() {
+    var dfd = jQuery.Deferred();
+    var param = {
+        "ID_KULLANICI": $.cookie("ID_KULLANICI"),
+        "ID_OTURUM": $.cookie("ID_OTURUM"),
+        "ID_YETKI": $.cookie("ID_YETKI")
+    };
+    WebAjax("authorityGroup", "authorityGroupList", JSON.stringify(param), "body", "Yükleniyor", function (res) {
+        var htmKod = '';
+        $("#txtAuthorityGroup").empty("");
+        var data = res.NESNE["Table"];
+        if (data.length > 0) {
+            $.each(data, function (index, value) {
+                htmKod += "<option value=" + value.ID_YETKI + ">" + value.AD + "</option>";
+            });
+            $("#txtAuthorityGroup").append("<option value='0'> Yetki Grubu Seç </option>");
+            $("#txtAuthorityGroup").append(htmKod);
+        }
+        else {
+            toastr.error("Bir hatayla karşılaşıldı", "Durum");
+        }
+        dfd.resolve();
+    });
+    return dfd.promise();
+}
+////////////Çağıracağımız yer////////////
+function newUser(id) {
+    if (id == 0 || id == undefined) { //Yeni Kullanıcı
+        clear();
+        getListAuthorityGroup();
+        $("#mdlTitle").text("Yeni Kullanıcı");
+        $("#btnOperation").text("Kaydet");
+        $("#userMdl").modal("show");
+    }
+    else {
+        clear();
+    //çağrılan yer
+        $.when(getListAuthorityGroup()).then(function () {
+            $.when(userDetails(id)).then(function () {
+                console.log('userDetails tamamlandı')
+            });
+        });
+    }
+}
+
+
+
+
+
+
