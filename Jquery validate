@@ -1,0 +1,7 @@
+function validate(idForm) {
+    var validator = $(idForm).validate({
+        errorElementClass: 'input-validation-error',
+        //debug: true
+    });
+    return validator.form();
+}
