@@ -1,0 +1,387 @@
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System.Text;
+using System.IO;
+
+namespace deneme.Connection
+{
+    public class Baglanti : IDisposable
+    {
+
+        public string ConString { get; set; }
+
+        public SqlConnection sqlBaglanti { get; set; }
+
+        public SqlCommand sqlKomut { get; set; }
+
+        public SqlDataReader sqlVeriOkuyucu { get; set; }
+
+        public SqlTransaction sqlTran { get; set; }
+
+        public String Mesajlar { get; set; }
+
+        private Dictionary<string, object> parametreler;
+        public Dictionary<string, object> Parametreler
+        {
+            get { return parametreler; }
+            set { parametreler = value; }
+        }
+        private static string ConnPsw(int i)
+        {
+            string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase) + "\\Baglanti.txt".Replace("file", "");
+            path = path.Replace("file:\\", "");
+            string sfr = "";
+            string[] words;
+            if (!System.IO.File.Exists(path))
+            {
+                using (System.IO.FileStream fs = System.IO.File.Create(path))// Create the file.
+                {
+                    Byte[] info = new UTF8Encoding(true).GetBytes("SQL1;Xbase;NIMDATB;so9921so");//Source;Initial Catalog; User Id;Password
+                    fs.Write(info, 0, info.Length);// Add some information to the file.
+                }
+            }
+
+            using (FileStream fs = File.OpenRead(path))// Open the stream and read it back.
+            {
+                byte[] b = new byte[1024];
+                UTF8Encoding temp = new UTF8Encoding(true);
+
+                while (fs.Read(b, 0, b.Length) > 0)
+                {
+                    sfr = temp.GetString(b);
+                }
+                words = sfr.Split(';');
+            }
+            return words[i];
+        }
+
+        public Baglanti(string komut)
+        {
+            string host = "";
+            switch(komut.Substring(0,5))
+            {
+                case "cmIst":
+                    host = "sql3";
+                  
+                    break;
+                case "cmRap":
+                    host = "sql2";
+                  
+                    break;
+                default:
+                     host = "sql1";
+                    break;
+            }
+            //host = System.Net.Dns.GetHostName().ToUpper().ToString()=="TESTXSAVE"?".": host;
+            ConString = "Data Source={0};Initial Catalog={1}; User Id={2};Password={3};Application Name=;";
+            sqlBaglanti = new SqlConnection { ConnectionString = String.Format(ConString, host, ConnPsw(1), ConnPsw(2), ConnPsw(3)) };
+            sqlBaglanti.InfoMessage += sqlBaglanti_InfoMessage;
+            Mesajlar = "";
+            parametreler = new Dictionary<string, object>();
+        }
+
+        void sqlBaglanti_InfoMessage(object sender, SqlInfoMessageEventArgs e)
+        {
+            Mesajlar += e.Message + "\n";
+        }
+
+
+        public void TranBaslat()
+        {
+            if (sqlBaglanti != null)
+            {
+                sqlTran = sqlBaglanti.BeginTransaction();
+                sqlKomut.Transaction = sqlTran;
+            }
+        }
+
+        public void TranCommit()
+        {
+            if (sqlTran != null)
+            {
+                sqlTran.Commit();
+            }
+        }
+
+        public void TranRollback()
+        {
+            if (sqlTran != null)
+            {
+                sqlTran.Rollback();
+            }
+        }
+
+        public void ParametreEkle(string ad, object ob)
+        {
+            if (parametreler.ContainsKey(ad)) // zaten varsa
+            {
+                parametreler[ad] = ob;
+            }
+            else
+            {
+                parametreler.Add(ad, ob);
+            }
+        }
+
+        public void ParemetreTopluEkle(Dictionary<string, string> paras)
+        {
+            foreach (KeyValuePair<string, string> item in paras)
+            {
+                if (parametreler.ContainsKey(item.Key)) // zaten varsa
+                {
+                    parametreler[item.Key] = item.Value;
+                }
+                else
+                {
+                    parametreler.Add(item.Key, item.Value);
+                }
+            }
+        }
+
+        private SqlParameter[] GetirParametreDizisi()
+        {
+            SqlParameter[] sqlpd = new SqlParameter[parametreler.Count];
+
+            int i = 0;
+            foreach (KeyValuePair<string, object> nv in parametreler)
+            {
+                if (nv.Key.Contains("OO@"))
+                {
+                    SqlParameter sp = new SqlParameter(nv.Key.Replace("OO@", "@"), nv.Value);
+                    sp.Direction = ParameterDirection.Output;
+                    sqlpd[i] = sp;
+                }
+                else if (nv.Key.Contains("OU@"))
+                {
+                    SqlParameter sp = new SqlParameter(nv.Key.Replace("OU@", "@"), nv.Value);
+                    sp.Direction = ParameterDirection.InputOutput;
+                    sqlpd[i] = sp;
+                }
+                else if (nv.Key.Contains("RT@"))
+                {
+                    SqlParameter sp = new SqlParameter(nv.Key.Replace("RT@", "@"), nv.Value);
+                    sp.Direction = ParameterDirection.ReturnValue;
+                    sqlpd[i] = sp;
+                }
+                else
+                {
+                    sqlpd[i] = new SqlParameter(nv.Key, nv.Value);
+                }
+                i++;
+            }
+
+            return sqlpd;
+        }
+
+        public void Ac()
+        {
+            sqlBaglanti.Open();
+            sqlKomut = new SqlCommand();
+            sqlKomut.Connection = sqlBaglanti;
+        }
+
+        public void Kapat()
+        {
+            sqlBaglanti.Close();
+        }
+
+        public void YenidenBaslat()
+        {
+            sqlBaglanti.Close();
+            sqlBaglanti.Open();
+            sqlKomut = new SqlCommand { Connection = sqlBaglanti };
+        }
+
+
+
+        public void Dispose()
+        {
+            this.ConString = string.Empty;
+
+            if (this.sqlBaglanti != null)
+            {
+                this.sqlBaglanti.Dispose();
+                this.sqlBaglanti = null;
+            }
+
+            if (this.sqlKomut != null)
+            {
+                this.sqlKomut.Dispose();
+                this.sqlKomut = null;
+            }
+
+            if (this.sqlVeriOkuyucu != null)
+            {
+                this.sqlVeriOkuyucu.Dispose();
+                this.sqlVeriOkuyucu = null;
+            }
+
+            if (this.sqlTran != null && sqlTran.Connection != null)
+            {
+                TranRollback();
+            }
+        }
+
+        public DataTable SorguGetir(string komut, CommandType ct)
+        {
+            try
+            {
+                DataTable dt = new DataTable();
+                using (SqlDataAdapter da = new SqlDataAdapter(komut, sqlBaglanti))
+                {
+                    da.SelectCommand.CommandType = ct;
+                    da.SelectCommand.CommandTimeout = 9999;
+                    da.SelectCommand.Parameters.AddRange(GetirParametreDizisi());
+                    da.Fill(dt);
+                }
+                return dt;
+            }
+            catch (SqlException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataSet SorguGetir(string komut, CommandType ct, int bos)
+        {
+            DataSet ds = new DataSet();
+            SqlDataAdapter da = new SqlDataAdapter(komut, sqlBaglanti);
+            da.SelectCommand.CommandTimeout = 9999;
+            da.SelectCommand.CommandType = ct;
+            da.SelectCommand.Parameters.AddRange(GetirParametreDizisi());
+            da.Fill(ds);
+            return ds;
+        }
+
+        public DataSet SorguGetir(string komut, CommandType ct, SqlParameter[] sqlp)
+        {
+            DataSet ds = new DataSet();
+            SqlDataAdapter da = new SqlDataAdapter(komut, sqlBaglanti);
+            da.SelectCommand.CommandTimeout = 9999;
+            da.SelectCommand.CommandType = ct;
+            da.SelectCommand.Parameters.AddRange(sqlp);
+            da.Fill(ds);
+            return ds;
+        }
+
+        public int SorguGotur(string komut, int islemID)
+        {
+            this.ParametreEkle("@ISLEM", islemID);
+            return SorguGotur(komut, CommandType.StoredProcedure);
+        }
+
+        public int SorguGotur(string komut, CommandType ct)
+        {
+            try
+            {
+                int sonuc = 0;
+                sqlKomut.CommandText = komut;
+                sqlKomut.Parameters.Clear();
+                sqlKomut.Parameters.AddRange(GetirParametreDizisi());
+                sqlKomut.CommandType = ct;
+                sqlKomut.CommandTimeout = 99999;
+                sonuc = sqlKomut.ExecuteNonQuery();
+                if (parametreler.ContainsKey("RT@RETURN"))
+                    sonuc = (int)sqlKomut.Parameters["@RETURN"].Value;
+                return sonuc;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public object TekSonucGetir(string komut)
+        {
+            object ob = new object();
+            sqlKomut = new SqlCommand(komut, sqlBaglanti);
+            sqlKomut.Parameters.AddRange(GetirParametreDizisi());
+            ob = sqlKomut.ExecuteScalar();
+            return ob;
+        }
+
+        public SqlDataReader VeriOkuyucuGetir(string komut, CommandType ct)
+        {
+            if (sqlKomut == null)
+            {
+                sqlKomut = new SqlCommand(komut, sqlBaglanti);
+            }
+            sqlKomut.CommandText = komut;
+            sqlKomut.CommandType = ct;
+            sqlKomut.Parameters.AddRange(GetirParametreDizisi());
+            SqlDataReader sqldr = sqlKomut.ExecuteReader();
+            return sqldr;
+        }
+
+
+        internal void ParametreEkle()
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+//###############################Apide kullanımı#############################################
+        [HttpGet]
+        [ActionName("x")]
+        public List<fltIdAd> x(int IdUser, int IdMenu, int IdSube, int IdDonem, string Zaman, int IdSinif)
+        {
+            try
+            {
+                List<fltIdAd> s = new List<fltIdAd>();
+                DataSet ds;
+                using (Baglanti b = new Baglanti(sp))
+                {
+                    b.Ac();
+                    b.ParametreEkle("@ISLEM", 51);
+                    ds = b.SorguGetir(sp, System.Data.CommandType.StoredProcedure, 0);
+                    b.Kapat();
+                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    {
+                        s.Add(new fltIdAd()
+                        {
+                            ID = Convert.ToInt32(dr["ID"]),
+                            AD = dr["AD"].ToString(),
+                        });
+                    }
+                }
+                return s;
+            }
+            catch
+            {
+                throw new Exception("Kontenjan Paket Listesi Çekilemedi..");
+            }
+        }
+		
+		///////////////////////////////////////////////////////////////////////////////
+		[ActionName("ekle")]
+        [HttpPost]
+        public bool ekle(CmdenKisi cmk)
+        {
+            List<CmKisiList> xmodel = cmk.CmdenKisisi;                                    
+
+            try
+            {
+                ConvertToDataTable.ListtoDataTableConverter converter = new ConvertToDataTable.ListtoDataTableConverter();
+                DataTable dt3 = converter.ToDataTable(xmodel);                
+
+                bool sonuc = false;
+                using (Baglanti b = new Baglanti(sp))
+                {
+                    b.Ac();
+                    b.ParametreEkle("@ISLEM", 1);  
+                    sonuc = b.SorguGotur(sp, CommandType.StoredProcedure) > 0;
+                    b.Kapat();
+                }
+                return sonuc;
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
