@@ -38,7 +38,7 @@ namespace deneme.Connection
             {
                 using (System.IO.FileStream fs = System.IO.File.Create(path))// Create the file.
                 {
-                    Byte[] info = new UTF8Encoding(true).GetBytes("SQL1;Xbase;NIMDATB;so9921so");//Source;Initial Catalog; User Id;Password
+                   
                     fs.Write(info, 0, info.Length);// Add some information to the file.
                 }
             }
@@ -74,7 +74,7 @@ namespace deneme.Connection
                      host = "sql1";
                     break;
             }
-            //host = System.Net.Dns.GetHostName().ToUpper().ToString()=="TESTXSAVE"?".": host;
+            //host = System.Net.Dns.GetHostName().ToUpper().ToString()==""?".": host;
             ConString = "Data Source={0};Initial Catalog={1}; User Id={2};Password={3};Application Name=;";
             sqlBaglanti = new SqlConnection { ConnectionString = String.Format(ConString, host, ConnPsw(1), ConnPsw(2), ConnPsw(3)) };
             sqlBaglanti.InfoMessage += sqlBaglanti_InfoMessage;
@@ -351,7 +351,7 @@ namespace deneme.Connection
             }
             catch
             {
-                throw new Exception("Kontenjan Paket Listesi Çekilemedi..");
+                throw new Exception("liste çekildi");
             }
         }
 		
