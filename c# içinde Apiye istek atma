@@ -1,0 +1,19 @@
+        public mJObject GET(JObject j, string Class, string Method)
+        {
+            string res = string.Empty;
+
+            HttpClient client = new HttpClient();
+            var stringContent = new StringContent(JsonConvert.SerializeObject(j), Encoding.UTF8, "application/json");
+
+            var response = client.PostAsync(new Uri("http://deneme.com.tr/API/" + Class + "/" + Method), stringContent).Result;
+
+            using (HttpContent content = response.Content)
+            {
+                Task<string> result = content.ReadAsStringAsync();
+                res = result.Result;
+            }
+
+            mJObject jo = JsonConvert.DeserializeObject<mJObject>(res);
+
+            return jo;
+        }
