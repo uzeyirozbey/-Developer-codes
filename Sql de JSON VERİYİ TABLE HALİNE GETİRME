@@ -1,11 +1,37 @@
-   ###############JON VERİ TİPİ ###############################
-   DECLARE @JSONVERI NVARCHAR(MAX) = N'[{ "Adi":"Üzeyir","Soyadi" : "Özbey"},{ "Adi":"Şemsedin","Soyadi" : "Kara"}]';
+ --###############JON VERİ TİPİ ###############################
+   DECLARE @JSONVERI NVARCHAR(MAX) = N'[ {"Adi":"Üzeyir","Soyadi" : "Özbey"}, {"Adi":"Şemsedin","Soyadi" : "Kara"}]';
    
-   ############2 TABLOYA EKLEME FORMATINA ÇEVİRME  : WITH KOMUTU ######################
+   --##### 2 TABLOYA EKLEME FORMATINA ÇEVİRME  : WITH KOMUTU########
    SELECT * FROM OPENJSON(@JSONVERI) WITH (Adi varchar(50) '$.Adi',Soyadi varchar(50) '$.Soyadi')
-   
+
    --#### 3 JSON VERİLERİNİ BAŞKA TABLOYA İNSERT ETMEK 
    --Tablomuzun olduğunu varsayalım 
    --insert into denemetablo
-    SELECT * FROM OPENJSON(@JSONVERI) WITH (Adi varchar(50) '$.Adi',Soyadi varchar(50) '$.Soyadi')
+  SELECT * FROM OPENJSON(@JSONVERI) WITH (Adi varchar(50) '$.Adi',Soyadi varchar(50) '$.Soyadi')
+
+  ---#######  4 insert ederken aynı veriyi tekrar kaydetmemek için de şunu yapıyoruz.############
+  --insert into denemetablo
+  --1  Yöntem 
+    SELECT J.* FROM OPENJSON(@JSONVERI)
+    WITH (Adi varchar(50) '$.Adi',Soyadi varchar(50) '$.Soyadi') AS J
+	LEFT JOIN DENEMETABLE T ON T.Adi = J.Adi where T.Adi is null 
+  --2. Yöntem
+  --insert into denemetablo
+  --2  Yöntem 
+    SELECT * FROM OPENJSON(@JSONVERI)
+    WITH (Adi varchar(50) '$.Adi',Soyadi varchar(50) '$.Soyadi') 
+	WHERE Adi NOT IN (SELECT Adi FROM DENEMETABLE)   --DENEME TABLODA OLMAYANLARI EKLE
+
+	--########Güncellme işlemi #############################
+
+	UPDATE T SET 
+	  T.Adi=J.Adi, 
+    FROM denemeTablo T
+    INNER JOIN OPENJSON(@JSON) 
+     WITH (
+          Adi nvarchar(50) '$.Adi', 
+          Soyadi nvarchar(20) '$.Soyadi', 
+     ) J ON T.Adi=J.Adi    
+
+
    
