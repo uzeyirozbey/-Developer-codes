@@ -1,0 +1,20 @@
+//########### Callback fonksiyonu ###########
+function birinci(callback){
+     setTimeout(() => {
+         console.log("birinci");
+         callback(ucuncu);
+     }, 5000);
+}
+
+function ikinci(callback){
+     setTimeout(() => {
+          console.log("ikinci");
+          callback();
+      }, 2000);
+}
+
+function ucuncu(){
+     console.log("ucuncu");
+}
+
+birinci(ikinci);
