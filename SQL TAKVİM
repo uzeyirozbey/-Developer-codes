@@ -1,0 +1,175 @@
+
+  SELECT
+  CASE DATEPART(weekday, T.DateVal)
+    WHEN 1 THEN 'Pazar'
+    WHEN 2 THEN 'Pazartesi'
+    WHEN 3 THEN 'Salı'
+    WHEN 4 THEN 'Çarşamba'
+    WHEN 5 THEN 'Perşembe '
+    WHEN 6 THEN 'Cuma'
+    WHEN 7 THEN 'Cumartesi'
+  END AS Gunler,
+
+  DATEPART(day, T.DateVal) AS [Gun],
+
+  --Aylar
+
+    CASE DATEPART(MONTH, T.DateVal)
+    WHEN 1 THEN 'Ocak'
+    WHEN 2 THEN 'Şubat'
+    WHEN 3 THEN 'Mart'
+    WHEN 4 THEN 'Nisan'
+    WHEN 5 THEN 'Mayıs'
+    WHEN 6 THEN 'Haziran'
+    WHEN 7 THEN 'Temmuz'
+    WHEN 8 THEN 'Ağustos'
+    WHEN 9 THEN 'Eylül'
+    WHEN 10 THEN 'Ekim'
+    WHEN 11 THEN 'Kasım'
+    WHEN 12 THEN 'Aralık'
+  END AS Aylar,
+
+  ---------------------------
+  DATEPART(month, T.DateVal) AS [Ay],
+  DATEPART(year, T.DateVal) AS [Yıl]
+FROM
+(
+  SELECT
+      DATEADD(day, SEQ.SeqValue, '2020-01-01') DateVal
+  FROM
+  (
+  SELECT
+      (HUNDREDS.SeqValue + TENS.SeqValue + ONES.SeqValue) SeqValue
+  FROM
+      (
+      SELECT 0  SeqValue
+      UNION ALL
+      SELECT 1 SeqValue
+      UNION ALL
+      SELECT 2 SeqValue
+      UNION ALL
+      SELECT 3 SeqValue
+      UNION ALL
+      SELECT 4 SeqValue
+      UNION ALL
+      SELECT 5 SeqValue
+      UNION ALL
+      SELECT 6 SeqValue
+      UNION ALL
+      SELECT 7 SeqValue
+      UNION ALL
+      SELECT 8 SeqValue
+      UNION ALL
+      SELECT 9 SeqValue
+      ) ONES
+  CROSS JOIN
+      (
+      SELECT 0 SeqValue
+      UNION ALL
+      SELECT 10 SeqValue
+      UNION ALL
+      SELECT 20 SeqValue
+      UNION ALL
+      SELECT 30 SeqValue
+      UNION ALL
+      SELECT 40 SeqValue
+      UNION ALL
+      SELECT 50 SeqValue
+      UNION ALL
+      SELECT 60 SeqValue
+      UNION ALL
+      SELECT 70 SeqValue
+      UNION ALL
+      SELECT 80 SeqValue
+      UNION ALL
+      SELECT 90 SeqValue
+      ) TENS
+  CROSS JOIN
+      (
+      SELECT 0 SeqValue
+      UNION ALL
+      SELECT 100 SeqValue
+      UNION ALL
+      SELECT 200 SeqValue
+      UNION ALL
+      SELECT 300 SeqValue
+      UNION ALL
+      SELECT 400 SeqValue
+      UNION ALL
+      SELECT 500 SeqValue
+      UNION ALL
+      SELECT 600 SeqValue
+      UNION ALL
+      SELECT 700 SeqValue
+      UNION ALL
+      SELECT 800 SeqValue
+      UNION ALL
+      SELECT 900 SeqValue
+	   UNION ALL
+      SELECT 1000 SeqValue
+	    UNION ALL
+      SELECT 1100 SeqValue
+	    UNION ALL
+      SELECT 1200 SeqValue
+	    UNION ALL
+      SELECT 1300 SeqValue
+	    UNION ALL
+      SELECT 1400 SeqValue
+	    UNION ALL
+      SELECT 1500 SeqValue
+	      UNION ALL
+      SELECT 1600 SeqValue
+	      UNION ALL
+      SELECT 1700 SeqValue
+	      UNION ALL
+      SELECT 1800 SeqValue
+	        UNION ALL
+      SELECT 1900 SeqValue
+	        UNION ALL
+      SELECT 2000 SeqValue
+	          UNION ALL
+      SELECT 2100 SeqValue
+	          UNION ALL
+      SELECT 2200 SeqValue
+	          UNION ALL
+      SELECT 2300 SeqValue
+
+	         UNION ALL
+      SELECT 2400 SeqValue
+	         UNION ALL
+      SELECT 2500 SeqValue
+	        UNION ALL
+      SELECT 2600 SeqValue
+	       UNION ALL
+      SELECT 2700 SeqValue
+	       UNION ALL
+      SELECT 2800 SeqValue
+	       UNION ALL
+      SELECT 2900 SeqValue
+	       UNION ALL
+      SELECT 3000 SeqValue
+	       UNION ALL
+      SELECT 3100 SeqValue
+	       UNION ALL
+      SELECT 3200 SeqValue
+	         UNION ALL
+      SELECT 3300 SeqValue
+	  UNION ALL
+	    SELECT 3400 SeqValue
+	       UNION ALL
+      SELECT 3500 SeqValue
+	       UNION ALL
+      SELECT 3600 SeqValue
+	         UNION ALL
+      SELECT 3700 SeqValue
+	           UNION ALL
+      SELECT 3800 SeqValue
+	             UNION ALL
+      SELECT 3918 SeqValue
+      ) HUNDREDS
+  ) SEQ
+) T
+WHERE
+  T.DateVal <= '2040-12-31'
+ORDER BY
+  T.DateVal ASC
