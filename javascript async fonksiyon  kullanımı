@@ -1,0 +1,54 @@
+const user  = {id :10, name :'mehmet'}
+const friends = [{id :11, name :'kenan'},{id :12, name :'murat'}];
+
+const getUser = () => {
+    return new Promise((resolve,reject)=> {
+       setTimeout(() =>{
+         resolve(user)
+       },9000);
+    })
+}
+
+
+const getFriend = (userId) => {
+    return new Promise((resolve,reject)=> {
+       setTimeout(() =>{
+         resolve(friends)
+       },800);
+    })
+}
+
+let userId;
+//Yöntem 1  callback hell kullanımı
+// getUser().then(function(user){
+//     userId=user.id;
+//     getFriend().then(function(friends){
+//         console.log(user);
+//         console.log(friends);
+//     })
+// })
+///////////////////////////////
+//Yöntem 2 
+//Promise chain :zincirleme
+
+//  getUser()
+//         .then((user)=>{
+//           //Çalıştırmak istediğimiz ikinci fonksiyonu
+//          return getFriend(user.id);
+//         })
+//         .then((friends) => {
+//           console.log(friends);
+//           //buna bağlı fonksiyonlarda varsa  return deyip devam ediyoruz.   
+//         });
+////////////////////////////////////////////
+//Yöntem 3
+//async fonksiyon kullanımı
+asenkronAkis();
+async function asenkronAkis(){
+    console.log("işlem başladı");
+    const user = await getUser();
+    console.log("user servisi bitti");
+    console.log("friend başladı");
+     const friend = await getFriend(user.id);
+     console.log("friend servisi bitti");
+}
