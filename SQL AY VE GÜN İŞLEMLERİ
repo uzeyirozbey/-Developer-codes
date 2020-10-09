@@ -1,0 +1,55 @@
+DECLARE @Tarih DATE = GETDATE()
+DECLARE @Yil INT = DATEPART(YEAR, @Tarih);
+DECLARE @Ay INT = DATEPART(MONTH, @Tarih);
+ 
+CREATE TABLE #TmpTarih
+(
+    SiraNo INT IDENTITY,
+    HaftaBaslangicGunu DATE,
+    HaftaBitisGunu DATE
+);
+ 
+IF DATEPART(dw, @Tarih) <> 7
+BEGIN
+    SET @Tarih = DATEADD(d, -DATEPART(dw, @Tarih), @Tarih);
+END;
+INSERT INTO #TmpTarih
+VALUES
+(@Tarih, DATEADD(D, 6, @Tarih));
+SET @Tarih = DATEADD(D, 7, @Tarih);
+ 
+WHILE YEAR(@Tarih) = @Yil AND MONTH(@Tarih) = @Ay
+BEGIN
+    INSERT INTO #TmpTarih
+    VALUES
+    (@Tarih, DATEADD(D, 6, @Tarih));
+    SET @Tarih = DATEADD(D, 7, @Tarih);
+END;
+ 
+SELECT
+   T.SiraNo
+  ,HaftaninBaslangicGunNo = DATEPART(DW,T.HaftaBaslangicGunu)
+  ,T.HaftaBaslangicGunu
+  ,HaftaninBaslangicGunu= (CASE 
+                            
+                            WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Monday' THEN 'Pazartesi'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Tuesday' THEN 'Salı'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Wednesday' THEN 'Çarşamba'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Thursday' THEN 'Perşembe '
+                            WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Friday' THEN 'Cuma'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Saturday' THEN 'Cumartesi'
+							WHEN (SELECT DATENAME(DW,T.HaftaBaslangicGunu)) = 'Sunday' THEN 'Pazar' END) 
+ ,HaftaninBitisGunNo = DATEPART(DW,T.HaftaBitisGunu)
+ ,T.HaftaBitisGunu
+ ,HaftaBitisGunu=(CASE 
+                           
+                            WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Monday' THEN 'Pazartesi'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Tuesday' THEN 'Salı'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Wednesday' THEN 'Çarşamba'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Thursday' THEN 'Perşembe '
+                            WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Friday' THEN 'Cuma'
+                            WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Saturday' THEN 'Cumartesi'
+							WHEN (SELECT DATENAME(DW,T.HaftaBitisGunu)) = 'Sunday' THEN 'Pazar' END) 
+
+FROM #TmpTarih AS T;
+DROP TABLE #TmpTarih;
