@@ -1,0 +1,30 @@
+Better Comments : kodda algıda seçicilik yapar.
+
+Bracket Pair Colorizer : koddaki scopları renklendirmesini sağlar.
+
+Htmlcsssupport : kodu otomatik tamamlamamızı sağlar.
+
+Import Cost . Dosyaların boyutlarını görmemizi sağlar.
+
+indent-rainbow : kodu renklendirir. Algıda seçicilik sağlıyor.
+
+javascript (ES6) Code snippets : kodu tamamlamlar.
+
+live Server : html dosyamızı çalıştırır.
+
+live Share : Ekran paylaşmayı sağlar .
+
+Prettier-Code formatter: kodu düzenli bir hale getirir.
+
+Regex Snippets: Regex 'i otomatik oluşturmayı sağlar. !vale  diye başlar.
+
+Rest Client : code içinde postman gibi çalışır. Rest api istek atmamızı veya test etmemizi sağlar. 
+
+açacağımız dosya rest uzantılı olmak zorundaır.
+
+Vetur .vue js code snippet
+
+vscode-icons :  dosyaların ve diğer uzantıların iconlarını gösterir.
+
+
+
